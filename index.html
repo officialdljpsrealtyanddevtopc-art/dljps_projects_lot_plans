@@ -276,7 +276,17 @@ const row=(c,bold)=>{doc.setFont(undefined,bold?"bold":"normal");doc.setFontSize
 for(const b in BL){if(y>170){doc.addPage();y=14}doc.setFontSize(11);doc.setFont(undefined,"bold");doc.text(bname(b),14,y);y+=6;row(["Lot","Lot name","Area","Type","Status","Buyer / client","Agent","Price","Monthly"],1);
 a.filter(x=>x[0]==b).forEach(x=>{if(y>196){doc.addPage();y=14}row([x[2],x[3],x[4],x[5],x[14],x[15],x[17],"PHP "+x[9].toLocaleString(),"PHP "+x[13].toLocaleString()])});y+=4}
 dl("PMV3_lot_report.pdf",doc.output("arraybuffer"))}
-function exMap(){const J=window.jspdf;if(!J)return toast("PDF library didn't load");const c=document.createElement("canvas");c.width=3000;c.height=Math.round(3000*cv.height/cv.width);const x=c.getContext("2d");x.drawImage($("bi"),0,0,c.width,c.height);x.drawImage(cv,0,0,c.width,c.height);
+function exMap(){const J=window.jspdf;if(!J)return toast("PDF library didn't load");const c=document.createElement("canvas");c.width=4000;c.height=Math.round(4000*cv.height/cv.width);const x=c.getContext("2d");x.drawImage($("bi"),0,0,c.width,c.height);x.drawImage(cv,0,0,c.width,c.height);
+try{updText();const tc=$("cvt");if(tc&&tc.width&&tc.height)x.drawImage(tc,0,0,c.width,c.height)}catch(e){console.error("map text layer",e)}
+try{const vb=$("svg").viewBox.baseVal,sc=c.width/(vb.width||2464);x.textAlign="center";x.lineJoin="round";
+for(const b in BL){const B=BL[b];
+if(st.blocks[b]&&typeof BP!=="undefined"&&BP[b]){const q2=BP[b];x.save();x.translate(q2[0]*sc,q2[1]*sc);if(b==1)x.rotate(-11*Math.PI/180);x.scale(sc,sc);x.font="700 26px system-ui,Arial,sans-serif";x.lineWidth=6;x.strokeStyle="#000";x.fillStyle="#fff";x.strokeText(st.blocks[b],0,0);x.fillText(st.blocks[b],0,0);x.restore()}
+if(pub)continue;
+B.c.forEach((p,i)=>{const d=get(b,i+1),nm=(d.client||d.name||"").slice(0,14);if(!nm)return;
+x.save();x.translate(p[0]*sc,p[1]*sc);x.rotate((B.pg?0:B.r||0)*Math.PI/180);x.scale(sc,sc);
+x.fillStyle="rgba(0,0,0,.8)";x.beginPath();if(x.roundRect)x.roundRect(-B.w/2+4,B.h/2-30,B.w-8,24,5);else x.rect(-B.w/2+4,B.h/2-30,B.w-8,24);x.fill();
+x.font="600 17px system-ui,Arial,sans-serif";x.fillStyle="#fff";x.fillText(nm,0,B.h/2-12);x.restore()})}}
+catch(e){console.error("map labels",e)}
 const doc=new J.jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),w=277,h=w*c.height/c.width;doc.setFontSize(13);doc.text("Prayer Mountain Valley III - Lot map  ("+new Date().toLocaleDateString()+")",10,10);doc.addImage(c.toDataURL("image/jpeg",.88),"JPEG",10,14,w,h);
 let lx=10;const ly=14+h+7;doc.setFontSize(9);chipList().forEach(([v,t,col])=>{const rgb=[1,3,5].map(i=>parseInt(col.slice(i,i+2),16));doc.setFillColor(...rgb);doc.rect(lx,ly-3.2,4,4,"F");doc.text(String(t),lx+6,ly);lx+=12+String(t).length*2});
 dl("PMV3_lot_map.pdf",doc.output("arraybuffer"))}
