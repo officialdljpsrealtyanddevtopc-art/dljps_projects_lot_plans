@@ -921,7 +921,7 @@ let st={lots:{},blocks:{}},cur=null,q="",flt=null,cm="s",pub=false,pubD=null,z=1
 if(!CLOUD)try{st=Object.assign(st,JSON.parse(localStorage.getItem(K)||"{}"))}catch(e){}
 st.log=st.log||[];
 if(!CLOUD){try{if(_cl7())save()}catch(e){}}
-const DEFT=[{id:"i",name:"Inner",rate:7000},{id:"c",name:"Corner",rate:7500}],DEFTERM=[12,24,36];
+const DEFT=[{id:"i",name:"Inner",rate:7000},{id:"c",name:"Corner",rate:7500}],DEFTERM=[12,24,36,48,60];
 if(!Array.isArray(st.types)||!st.types.length)st.types=DEFT.map(t=>({...t}));
 if(!Array.isArray(st.terms)||!st.terms.length)st.terms=DEFTERM.slice();
 const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1042,9 +1042,9 @@ function lotWarn(d,k){const dl=d.dbl||[];let h='<div style="margin-top:6px">';
 if(dl.length)h+='<div style="border:1px solid #c62828;background:#c6282814;border-radius:8px;padding:8px;margin-bottom:6px"><b style="color:#c62828">\u26A0 DOUBLE SALE</b> <span class="mu">same block &amp; lot sold to '+(dl.length+1)+' buyers</span>'+dl.map((x,i)=>'<div class="r2" style="align-items:center"><span>'+esc(x.client||"(no name)")+(x.stp?' <i class="mu">(stopped)</i>':'')+'<br><span class="mu">'+esc([x.contact,x.agent].filter(Boolean).join(" \u00b7 "))+'</span></span><button class="g" type="button" style="min-height:30px;padding:2px 8px" title="Remove this buyer" onclick="dblDel(\''+k+'\','+i+')">\u2715</button></div>').join("")+'</div>';
 h+='<button class="g" type="button" style="min-height:32px;'+(d.stp?'border-color:#c62828;color:#c62828;font-weight:700':'')+'" onclick="stpTog(\''+k+'\')">'+(d.stp?'\u26D4 STOPPED PAYMENT (tap to clear)':'Mark as stopped payment')+'</button></div>';return h}
 function pubCalc(k){const[b,l]=k.split("-").map(Number),d0=get(b,l);if(d0.amen)return;const st0={A:"Available",S:"Sold",N:"Not for sale"}[pubK(d0)];
-showModal(`<div class="row" style="align-items:center"><b style="flex:3">${esc(bname(b))}${LT(b,l)} — Sample price calculator</b><button class="g" style="flex:0" onclick="hideModal()">✕</button></div><div class="mu">${d0.area} sqm · ${esc(d0.tname)} · ${st0}</div><div class="row" style="margin-top:8px"><div><label>Discount %</label><input id="pc_disc" type="number" min="0" max="100" step="any" value="${d0.disc}"></div><div><label>Down payment %</label><input id="pc_dp" type="number" min="0" max="100" step="any" value="${d0.dp}"></div></div><div class="row"><div><label>Term</label><select id="pc_term">${termList(d0.term).map(n=>`<option value="${n}" ${n==d0.term?"selected":""}>${n} months</option>`).join("")}</select></div><div><label>Interest % / year</label><input id="pc_int" type="number" min="0" step="any" value="${d0.int}"></div></div><div id="pc_out" style="margin-top:10px"></div><div class="mu" style="margin-top:8px">Sample computation only. Not an official quotation; final price and terms are confirmed by your agent.</div><div class="row" style="margin-top:8px"><button class="g" onclick="hideModal()">Close</button></div>`);
+showModal(`<div class="row" style="align-items:center"><b style="flex:3">${esc(bname(b))}${LT(b,l)} — Sample price calculator</b><button class="g" style="flex:0" onclick="hideModal()">✕</button></div><div class="mu">${d0.area} sqm · ${esc(d0.tname)} · ${st0}</div><div class="row" style="margin-top:8px"><div><label>Discount %</label><input id="pc_disc" type="number" min="0" max="100" step="any" value="${d0.disc}"></div><div><label>Down payment %</label><input id="pc_dp" type="number" min="0" max="100" step="any" value="${d0.dp}"></div></div><div class="row"><div><label>Term</label><select id="pc_term">${calcTerms(d0.term).map(n=>`<option value="${n}" ${n==d0.term?"selected":""}>${n} months</option>`).join("")}</select></div><div><label>Interest % / year</label><input id="pc_int" type="number" min="0" step="any" value="${d0.int}"></div></div><div id="pc_out" style="margin-top:10px"></div><div class="mu" style="margin-top:8px">Sample computation only. Not an official quotation; final price and terms are confirmed by your agent.</div><div class="row" style="margin-top:8px"><button class="g" onclick="hideModal()">Close</button></div>`);
 const n=v=>Math.max(0,parseFloat(v)||0),u=()=>{$("pc_out").innerHTML=calcHTML({...d0,disc:Math.min(100,n($("pc_disc").value)),dp:Math.min(100,n($("pc_dp").value)),term:+$("pc_term").value||d0.term,int:n($("pc_int").value)})};
-["pc_disc","pc_dp","pc_term","pc_int"].forEach(i=>$(i).addEventListener("input",u));u()}
+["pc_disc","pc_dp","pc_term","pc_int"].forEach(i=>$(i).addEventListener("input",u));u();if(typeof agentUI=="function")agentUI(k,d0,pubK(d0))}
 function open_(k){if(pub){try{pubCalc(k)}catch(e){}return}cur=k;const[b,l]=k.split("-").map(Number),d=get(b,l);
 $("panel").innerHTML=`<div class="row" style="align-items:center"><b style="flex:3" id="ptl">${esc(bname(b))}${LT(b,l)}</b><button class="g" id="x" style="flex:0">✕</button></div><details id="lbd" style="margin-top:8px"><summary>✏️ Edit block &amp; lot label</summary>${lblForm(b,l)}</details><label>Area (sqm)</label><input id="f_area" type="number" min="0" step="any" value="${d.area}">
 <label>Custom lot name</label><input id="f_name" value="${esc(d.name)}" placeholder="e.g. Garden Lot">
@@ -1423,7 +1423,7 @@ if(Array.isArray(o.types)&&o.types.length)st.types=o.types;if(Array.isArray(o.te
 st.log.sort((a,b)=>a.t-b.t);if(st.log.length>400)st.log.splice(0,st.log.length-400);
 try{localStorage.setItem("pmv3_legacy_done","1")}catch(e){}
 PS={};render();document.querySelectorAll("#bn input").forEach(i=>i.value=st.blocks[i.dataset.b]||"");cldRender();toast("Uploading… keep this page open until it says Synced");cloudDirty()}
-function cloudDirty(){if(!CLOUD||!sbReady)return;dirty=true;cldSet("saving");clearTimeout(pushT);pushT=setTimeout(cloudPush,500)}
+function cloudDirty(){if(!CLOUD||!sbReady)return;dirty=true;cldSet("saving");clearTimeout(pushT);pushT=setTimeout(cloudPush,150)}
 async function upDoc(k,du){const bl=await(await fetch(du)).blob(),p=`${k}/${Date.now().toString(36)}${Math.random().toString(36).slice(2,8)}.jpg`;const{error}=await sb.storage.from("documents").upload(p,bl,{contentType:bl.type||"image/jpeg"});return error?null:p}
 async function cleanRow(k){const o=st.lots[k],r={...o};
 if(Array.isArray(o.docs)){const out=[];for(const x0 of o.docs){let x=typeof x0=="string"?{s:x0,t:"Other",n:""}:x0;
@@ -1477,9 +1477,28 @@ const m={};(a.data||[]).forEach(r=>m[r.key]=r);const ty=c.data&&c.data[0]&&Array
 pubT=ty.map((t,i)=>({id:"p"+i,name:String(t.name||"").slice(0,40),rate:Math.max(0,+t.rate||0)}));let ds="",ks="";
 for(const b in BL)BL[b].a.forEach((_,i)=>{const l=i+1,r=m[b+"-"+l];ds+=!r||r.s=="A"?"-":r.s=="N"?"X":"A";const want=r&&r.type_id?r.type_id:(BL[b].k.includes(l)?"c":"i");ks+=Math.max(0,ty.findIndex(t=>t.id==want)).toString(36)});
 pubD=ds;pubTK=ks;PS={};render()}
+const calcTerms=cur=>{const a=new Set([6,12,18,24,30,36,42,48,54,60]);(st.terms||[]).forEach(n=>{if(n>=1&&n<=60)a.add(n)});if(cur>=1)a.add(cur);return[...a].sort((x,y)=>x-y)};
+let lrT=0;function liveRT(){try{sbp.channel("pmv3-live").on("broadcast",{event:"ping"},()=>{clearTimeout(lrT);lrT=setTimeout(()=>liveLoad().catch(()=>{}),120)}).subscribe()}catch(e){}}
+/* Agent link: reserve available lots; taken lots can only be changed by asking the admin */
+function agentUI(k,d,s){if(!(LIVE&&SCOPE&&sbp))return;const box=$("modal").firstElementChild;if(!box||$("ag_box"))return;
+let nm="";try{nm=localStorage.getItem("pmv3_agent")||""}catch(e){}
+const avail=s=="A",h=avail
+?`<div id="ag_box" style="margin-top:12px;border-top:1px solid var(--bd);padding-top:10px"><b>Reserve this lot</b><p class="mu">Available — you can reserve it now.</p><label>Your name (agent)</label><input id="ag_n" value="${esc(nm)}" maxlength="60"><div class="row"><div><label>Client name</label><input id="ag_c" maxlength="120"></div><div><label>Client contact</label><input id="ag_p" maxlength="80"></div></div><div class="row" style="margin-top:8px"><button id="ag_go">Reserve lot</button></div><div id="ag_m" class="mu" style="margin-top:6px"></div></div>`
+:`<div id="ag_box" style="margin-top:12px;border-top:1px solid var(--bd);padding-top:10px"><b>${s=="N"?"Not for sale":"Already taken"}</b><p class="mu">Agents can't change this lot. Send a request to the admin and they will update it.</p><label>Your name (agent)</label><input id="ag_n" value="${esc(nm)}" maxlength="60"><label>What should be changed?</label><textarea id="ag_t" rows="2" maxlength="500"></textarea><div class="row" style="margin-top:8px"><button id="ag_go" class="g">Request change from admin</button></div><div id="ag_m" class="mu" style="margin-top:6px"></div></div>`;
+box.insertAdjacentHTML("beforeend",h);
+$("ag_go").onclick=async()=>{const a=$("ag_n").value.trim(),m=$("ag_m");if(!a){m.textContent="Enter your name first.";return}
+try{localStorage.setItem("pmv3_agent",a)}catch(e){}
+$("ag_go").disabled=true;m.textContent="Sending…";
+try{const r=avail?await sbp.rpc("agent_reserve",{p_key:k,p_agent:a,p_client:$("ag_c").value,p_contact:$("ag_p").value}):await sbp.rpc("agent_request_change",{p_key:k,p_agent:a,p_message:$("ag_t").value});
+if(r.error)throw r.error;const o=r.data||{};
+if(o.ok){toast(avail?"Lot reserved":"Request sent to admin");liveLoad().catch(()=>{});hideModal();return}
+if(o.error=="taken"){m.textContent="Someone just took this lot. Reload shows it as taken.";liveLoad().catch(()=>{})}
+else m.textContent=o.error=="too_many"?"Too many pending requests. Wait for the admin.":"Couldn't save ("+(o.error||"error")+").";
+}catch(e){m.textContent="Couldn't reach the server. Try again."}
+$("ag_go").disabled=false}}
 async function cloudInit(){if(!CLOUD)return;
 if(LIVE){sbp=window.supabase.createClient(SBC.url,SBC.key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});showLdr(true);
-if(SCOPE){try{await loadMap(SCOPE)}catch(e){}}try{await liveLoad()}catch(e){toast("Couldn't load the latest availability")}showLdr(false);setInterval(()=>liveLoad().catch(()=>{}),20000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)liveLoad().catch(()=>{})});return}
+if(SCOPE){try{await loadMap(SCOPE)}catch(e){}}try{await liveLoad()}catch(e){toast("Couldn't load the latest availability")}showLdr(false);setInterval(()=>liveLoad().catch(()=>{}),5000);liveRT();document.addEventListener("visibilitychange",()=>{if(!document.hidden)liveLoad().catch(()=>{})});return}
 if(pub)return;
 sb=window.supabase.createClient(SBC.url,SBC.key);showLdr(true);
 sb.auth.onAuthStateChange((ev)=>{if(ev=="SIGNED_OUT"&&me)onOut()});
@@ -2302,6 +2321,24 @@ bt.onclick=()=>{
  <h4>2. View link for Agent</h4><p class="mu">${CLOUD?"Map view only, live Available / Sold. No names, agents, payments, files or editing.":"Needs the hosted cloud version to show live status."}</p>
  <textarea id="shV" rows="2" readonly>${esc(vu)}</textarea><div class="row" style="margin-top:6px"><button id="shVc">Copy view link for Agent</button><button class="g" onclick="hideModal()">Close</button></div></div>`);
  $("shAc").onclick=()=>copyT(au);$("shVc").onclick=()=>copyT(vu)};
+})();
+</script>
+<script>
+/* ===== Admin: agent change requests (live) ===== */
+(function(){if(typeof CLOUD==="undefined"||!CLOUD||LIVE)return;
+let REQ=[],rch=null;
+const bt=document.createElement("button");bt.id="rq";bt.type="button";bt.className="g nopub";bt.style.display="none";
+const pl=$("pl");if(pl&&pl.parentNode)pl.parentNode.insertBefore(bt,pl);
+const paint=()=>{bt.style.display=me?"":"none";bt.textContent="\u{1F4E9} Requests"+(REQ.length?" ("+REQ.length+")":"");bt.style.borderColor=REQ.length?"#c62828":"";const m=$("rq_list");if(m)m.innerHTML=listH()};
+const listH=()=>REQ.length?REQ.map(r=>`<div class="r2" style="display:block;border-top:1px solid var(--bd);padding:8px 0"><b>Lot ${esc(r.lot_key)}</b> <span class="mu">· ${esc(r.agent)} · ${new Date(r.created_at).toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</span><div style="margin:4px 0">${esc(r.message||"(no message)")}</div><div class="row"><button class="g" data-o="${esc(r.lot_key)}">Open lot</button><button data-d="${r.id}">Done</button></div></div>`).join(""):'<p class="mu">No pending requests.</p>';
+async function load(){if(!sb||!me)return;const{data,error}=await sb.from("change_requests").select("*").eq("status","pending").order("created_at");if(error)return;REQ=data||[];paint()}
+bt.onclick=()=>{showModal(`<div class="row" style="align-items:center"><b style="flex:3">Agent change requests</b><button class="g" style="flex:0" onclick="hideModal()">✕</button></div><div id="rq_list">${listH()}</div>`);
+$("rq_list").onclick=async e=>{const o=e.target.dataset&&e.target.dataset.o,d=e.target.dataset&&e.target.dataset.d;
+if(o){hideModal();try{open_(o)}catch(x){}return}
+if(d){e.target.disabled=true;const{error}=await sb.from("change_requests").update({status:"done",resolved_by:st.who||null,resolved_at:new Date().toISOString()}).eq("id",d);if(error)toast("Couldn't update");else load()}}};
+function sub(){try{if(rch)sb.removeChannel(rch);rch=sb.channel("pmv3-req").on("postgres_changes",{event:"*",schema:"public",table:"change_requests"},p=>{if(p.eventType=="INSERT"&&p.new)toast("New request from "+p.new.agent+" for lot "+p.new.lot_key);load()}).subscribe()}catch(e){}}
+const _oi=onIn;onIn=async function(ses){await _oi(ses);load();sub()};
+const _oo=onOut;onOut=function(){try{if(rch)sb.removeChannel(rch)}catch(e){}rch=null;REQ=[];_oo();paint()};
 })();
 </script>
 </body></html>
