@@ -1398,7 +1398,7 @@ const cj=v=>JSON.stringify(v,(k,x)=>x&&typeof x=="object"&&!Array.isArray(x)?Obj
 let sb=null,sbp=null,me=null,sbReady=false,chan=null,pushing=false,again=false,dirty=false,pushT=null,retryT=null,lastPull=0,CST={s:"",t:""},imT=0;
 const SYN={lots:{},cfg:""},SURL={};
 const myName=()=>(me&&me.user_metadata&&me.user_metadata.name)||((me&&me.email)||"").split("@")[0]||"Staff";
-const cfgObj=()=>({blocks:st.blocks,types:st.types,terms:st.terms,maps:st.maps||{},cmaps:st.cmaps||{},...(Object.keys(st.lbl||{}).length?{lbl:st.lbl}:{})});
+const cfgObj=()=>({blocks:st.blocks,types:st.types,terms:st.terms,maps:st.maps||{},cmaps:st.cmaps||{},...(Object.keys(st.lbl||{}).length?{lbl:st.lbl}:{}),...(st.hub?{hub:st.hub}:{})});
 function imOK(){if(Date.now()-imT<6000)return true;imT=Date.now();toast(CLOUD?"Cloud mode: this replaces ALL shared data for everyone. Tap Load backup again within 6 seconds to confirm.":"This replaces ALL data saved in this browser with the backup text. Tap Load backup again within 6 seconds to confirm.");return false}
 function showLdr(v){$("ldr").style.display=v?"flex":"none"}
 function showLogin(msg){showLdr(false);$("lgn").style.display="flex";$("lg_m").textContent=msg||"";setTimeout(()=>$("lg_e").focus(),50)}
@@ -1456,14 +1456,14 @@ async function toDU(u){if(!u||String(u).startsWith("data:"))return u;const bl=aw
 async function pull(){const[L,S,A]=await Promise.all([sb.from("lots").select("key,data"),sb.from("settings").select("data").eq("id",1).maybeSingle(),sb.from("activity").select("id,at,lot_key,field,from_val,to_val,by_name").order("at",{ascending:false}).limit(200)]);
 for(const r of[L,S,A])if(r.error)throw r.error;
 st.lots={};SYN.lots={};for(const r of L.data||[]){st.lots[r.key]=r.data;SYN.lots[r.key]=cj(r.data)}
-const cfg=(S.data&&S.data.data)||{};st.blocks=cfg.blocks||{};st.lbl=cfg.lbl||{};st.maps=cfg.maps||{};st.cmaps=cfg.cmaps||{};try{cmSync()}catch(e){}try{mapNames()}catch(e){}st.types=Array.isArray(cfg.types)&&cfg.types.length?cfg.types:DEFT.map(t=>({...t}));st.terms=Array.isArray(cfg.terms)&&cfg.terms.length?cfg.terms:DEFTERM.slice();SYN.cfg=cj(cfg);
+const cfg=(S.data&&S.data.data)||{};st.blocks=cfg.blocks||{};st.lbl=cfg.lbl||{};st.maps=cfg.maps||{};st.cmaps=cfg.cmaps||{};try{cmSync()}catch(e){}try{mapNames()}catch(e){}st.types=Array.isArray(cfg.types)&&cfg.types.length?cfg.types:DEFT.map(t=>({...t}));st.terms=Array.isArray(cfg.terms)&&cfg.terms.length?cfg.terms:DEFTERM.slice();SYN.cfg=cj(cfg);st.hub=cfg.hub;window.__hub=cfg.hub;try{if(window.__applyHub)window.__applyHub(cfg.hub)}catch(e){}
 st.log=(A.data||[]).slice().reverse().map(r=>({t:Date.parse(r.at),who:r.by_name||"",k:r.lot_key||"",f:r.field||"",from:r.from_val==null?"":r.from_val,to:r.to_val==null?"":r.to_val,sid:r.id}));
 await signDocs();PS={};render();document.querySelectorAll("#bn input").forEach(i=>i.value=st.blocks[i.dataset.b]||"");lastPull=Date.now();cldRender()}
 function onLot(p){const k=(p.new&&p.new.key)||(p.old&&p.old.key);if(!k)return;
 if(p.eventType=="DELETE"){if(k in st.lots){delete st.lots[k];delete SYN.lots[k];PS={};render();cldRender()}return}
 const j=cj(p.new.data);if(SYN.lots[k]===j)return;st.lots[k]=p.new.data;SYN.lots[k]=j;PS={};render();signDocs().then(()=>render());
 if(k===cur&&p.new.updated_by)toast("Lot "+k+" was just updated by "+p.new.updated_by+" — reopen it to see the changes");cldRender()}
-function onCfg(p){const d=(p.new&&p.new.data)||{},j=cj(d);if(j===SYN.cfg)return;SYN.cfg=j;st.blocks=d.blocks||{};st.lbl=d.lbl||{};st.maps=d.maps||{};st.cmaps=d.cmaps||{};try{cmSync()}catch(e){}try{mapNames()}catch(e){}if(Array.isArray(d.types)&&d.types.length)st.types=d.types;if(Array.isArray(d.terms)&&d.terms.length)st.terms=d.terms;PS={};render();document.querySelectorAll("#bn input").forEach(i=>i.value=st.blocks[i.dataset.b]||"")}
+function onCfg(p){const d=(p.new&&p.new.data)||{},j=cj(d);if(j===SYN.cfg)return;SYN.cfg=j;st.blocks=d.blocks||{};st.lbl=d.lbl||{};st.maps=d.maps||{};st.cmaps=d.cmaps||{};try{cmSync()}catch(e){}try{mapNames()}catch(e){}if(Array.isArray(d.types)&&d.types.length)st.types=d.types;if(Array.isArray(d.terms)&&d.terms.length)st.terms=d.terms;st.hub=d.hub;window.__hub=d.hub;try{if(window.__applyHub)window.__applyHub(d.hub)}catch(e){}PS={};render();document.querySelectorAll("#bn input").forEach(i=>i.value=st.blocks[i.dataset.b]||"")}
 function onAct(p){const r=p.new;if(!r)return;const t=Date.parse(r.at);if(st.log.some(e=>e.sid==r.id||(e.t==t&&e.k==(r.lot_key||"")&&e.f==(r.field||"")&&e.who==(r.by_name||""))))return;
 st.log.push({t,who:r.by_name||"",k:r.lot_key||"",f:r.field||"",from:r.from_val==null?"":r.from_val,to:r.to_val==null?"":r.to_val,sid:r.id});st.log.sort((a,b)=>a.t-b.t);render()}
 function subscribe(){if(chan)sb.removeChannel(chan);chan=sb.channel("pmv3-sync").on("postgres_changes",{event:"*",schema:"public",table:"lots"},onLot).on("postgres_changes",{event:"*",schema:"public",table:"settings"},onCfg).on("postgres_changes",{event:"INSERT",schema:"public",table:"activity"},onAct).subscribe(s=>{if(s=="CHANNEL_ERROR"||s=="TIMED_OUT")cldSet("err","live updates paused")})}
@@ -2394,7 +2394,8 @@ const K="pmv3_wm",D={img:"",on:true,all:true,op:30,sz:25,x:50,y:50};
 let C=Object.assign({},D),el=id=>document.getElementById(id);
 try{const r=JSON.parse(localStorage.getItem(K)||"null");if(r)C=Object.assign({},D,r)}catch(e){}
 const home=el("home"),set=el("hset");
-function persist(){try{localStorage.setItem(K,JSON.stringify(C));el("wmsg").textContent="Saved ✓";return true}catch(e){el("wmsg").textContent="Could not save (storage full). Try a smaller logo.";return false}}
+function pushHub(){try{if(typeof CLOUD==="undefined"||!CLOUD||typeof sbReady==="undefined"||!sbReady||typeof st==="undefined"||typeof save!=="function")return;let n="";try{n=(localStorage.getItem("pmv3_hname")||"").trim()}catch(e){}const big=(C.img||"").length>600000,wm=big?Object.assign({},C,{img:""}):C,nh={name:n,wm};if(!st.hub&&!n&&!wm.img&&JSON.stringify(wm)===JSON.stringify(D))return;if(JSON.stringify(st.hub||null)===JSON.stringify(nh))return;st.hub=nh;save();if(big)el("wmsg").textContent="Saved here, but the logo is too large to sync. Try a smaller image."}catch(e){}}
+function persist(){try{localStorage.setItem(K,JSON.stringify(C));el("wmsg").textContent="Saved ✓";pushHub();return true}catch(e){el("wmsg").textContent="Could not save (storage full). Try a smaller logo.";return false}}
 function place(i,box){i.style.left=C.x+"%";i.style.top=C.y+"%";i.style.width=C.sz+"%";i.style.opacity=C.op/100}
 function mark(){let m=el("wmk");if(!C.img||!C.on){if(m)m.remove();return}
  if(!m){m=document.createElement("img");m.id="wmk";m.alt="";m.setAttribute("aria-hidden","true")}
@@ -2430,8 +2431,11 @@ window.hubName=()=>{let n="";try{n=(localStorage.getItem("pmv3_hname")||"").trim
 document.title=window.hubName();
 function applyName(){const n=window.hubName(),h=home.querySelector(".w>h2"),t=document.querySelector("#wpv .pt");if(h)h.textContent=n;if(t)t.textContent=n;document.title=n}
 home.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#hsb")){let n="";try{n=(localStorage.getItem("pmv3_hname")||"").trim()}catch(x){}el("hnm").value=n;applyName()}});
-el("hnsave").onclick=()=>{const v=el("hnm").value.trim();try{if(v)localStorage.setItem("pmv3_hname",v);else localStorage.removeItem("pmv3_hname");el("hnmsg").textContent=v?"Saved ✓":"Cleared. Using the default name.";applyName()}catch(e){el("hnmsg").textContent="Could not save on this browser."}};
-el("hnreset").onclick=()=>{try{localStorage.removeItem("pmv3_hname")}catch(e){}el("hnm").value="";el("hnmsg").textContent="Reset to the default name.";applyName()};
+el("hnsave").onclick=()=>{const v=el("hnm").value.trim();try{if(v)localStorage.setItem("pmv3_hname",v);else localStorage.removeItem("pmv3_hname");el("hnmsg").textContent=v?"Saved ✓":"Cleared. Using the default name.";applyName();pushHub()}catch(e){el("hnmsg").textContent="Could not save on this browser."}};
+el("hnreset").onclick=()=>{try{localStorage.removeItem("pmv3_hname")}catch(e){}el("hnm").value="";el("hnmsg").textContent="Reset to the default name.";applyName();pushHub()};
+/* ===== Shared hub settings: apply what the cloud holds (name + watermark) ===== */
+window.__applyHub=h=>{if(!h||typeof h!=="object")return;try{const n=(h.name||"").trim();if(n)localStorage.setItem("pmv3_hname",n);else localStorage.removeItem("pmv3_hname");C=Object.assign({},D,h.wm||{});localStorage.setItem(K,JSON.stringify(C))}catch(e){C=Object.assign({},D,h.wm||{})}try{ui();applyName();const i=el("hnm");if(i)i.value=(h.name||"")}catch(e){}};
+if(window.__hub)window.__applyHub(window.__hub);
 /* ===== Documentation generators (Word-compatible .doc, built in the browser) ===== */
 {
 const dE=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/`([^`]+)`/g,"<code>$1</code>");
