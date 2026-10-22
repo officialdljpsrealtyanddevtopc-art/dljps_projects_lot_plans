@@ -1386,7 +1386,9 @@ clearTimeout(c2);const A2=get(b,l).docs.slice(),r=A2.splice(i,1)[0];logEv(k,"msg
 
 
 /* ===== Supabase cloud sync: sign-in, shared data, live updates, cloud photos, live buyer link ===== */
-const LIVE=CLOUD&&location.hash==="#live";
+const _SH=location.hash.match(/^#(live|proj)=([\w-]{1,40})$/),SCOPE=_SH?_SH[2]:null,SCOPE_ADMIN=!!(_SH&&_SH[1]==="proj");
+const LIVE=CLOUD&&(location.hash==="#live"||!!(_SH&&_SH[1]==="live"));
+if(SCOPE)document.documentElement.classList.add("scoped");
 if(LIVE){pub=true;document.body.classList.add("pub");$("pv").style.display="none"}
 const cj=v=>JSON.stringify(v,(k,x)=>x&&typeof x=="object"&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,q)=>(o[q]=x[q],o),{}):x);
 let sb=null,sbp=null,me=null,sbReady=false,chan=null,pushing=false,again=false,dirty=false,pushT=null,retryT=null,lastPull=0,CST={s:"",t:""},imT=0;
@@ -1473,7 +1475,7 @@ for(const b in BL)BL[b].a.forEach((_,i)=>{const l=i+1,r=m[b+"-"+l];ds+=!r||r.s==
 pubD=ds;pubTK=ks;PS={};render()}
 async function cloudInit(){if(!CLOUD)return;
 if(LIVE){sbp=window.supabase.createClient(SBC.url,SBC.key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});showLdr(true);
-try{await liveLoad()}catch(e){toast("Couldn't load the latest availability")}showLdr(false);setInterval(()=>liveLoad().catch(()=>{}),20000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)liveLoad().catch(()=>{})});return}
+if(SCOPE){try{await loadMap(SCOPE)}catch(e){}}try{await liveLoad()}catch(e){toast("Couldn't load the latest availability")}showLdr(false);setInterval(()=>liveLoad().catch(()=>{}),20000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)liveLoad().catch(()=>{})});return}
 if(pub)return;
 sb=window.supabase.createClient(SBC.url,SBC.key);showLdr(true);
 sb.auth.onAuthStateChange((ev)=>{if(ev=="SIGNED_OUT"&&me)onOut()});
@@ -2270,5 +2272,32 @@ window.isAmen=isAmen;window.slugM=()=>String(mname(curMap)||"map").replace(/[^A-
 const persist=()=>{let ch=0;try{const A=typeof ALLBL!=="undefined"?ALLBL:BL;for(const b in A){if(!isAmen(b))continue;A[b].c.forEach((_,i)=>{const k=b+"-"+(i+1),o=st.lots[k]||(st.lots[k]={});if(o.status!=="X"||o.amen!==1){o.status="X";o.amen=1;ch=1}})}if(ch)save()}catch(e){}return ch};
 persist();setTimeout(()=>{if(persist()){try{PS={};render()}catch(e){}}},4000);
 try{PS={};render()}catch(e){}})();
+</script>
+<style>.scoped #mp,.scoped #mdb{display:none!important}#shpm textarea{width:100%;font-size:12px}#shpm h4{margin:14px 0 4px}</style><script>
+/* ===== Per-project share links =====
+   View link  : base#live=<map>  -> that project's map only, live Available/Sold, no features
+   Admin link : base#proj=<map>  -> sign-in required, opens ONLY that project with all its features */
+(function(){
+const _lm=loadMap,_sh=showHome;
+loadMap=function(id){if(SCOPE&&id!==SCOPE)return Promise.resolve();return _lm(id)};
+showHome=function(){if(SCOPE)return;return _sh()};
+function lock(){const m=MAPS[SCOPE];if(!m)return;try{document.title=m.name+" – Lot Manager";const h=document.querySelector("header h1");if(h)h.textContent=m.name}catch(e){}}
+if(SCOPE){
+ if(typeof onIn==="function"){const _oi=onIn;onIn=async function(ses){await _oi(ses);try{await _lm(SCOPE);lock();const h=$("home");if(h)h.style.display="none"}catch(e){}}}
+ if(!CLOUD){_lm(SCOPE).then(lock).catch(()=>{});const h=$("home");if(h)h.style.display="none"}
+ setInterval(lock,1500);
+}
+const bt=document.createElement("button");bt.id="shp";bt.type="button";bt.className="g nopub";bt.textContent="\u{1F517} Share project";
+const pl=$("pl");if(pl&&pl.parentNode)pl.parentNode.insertBefore(bt,pl);
+bt.onclick=()=>{
+ if(SCOPE){toast("Open the full app to create share links");return}
+ const id=curMap,nm=MAPS[id]?MAPS[id].name:id,base=pubBase(),vu=base+"#live="+id,au=base+"#proj="+id;
+ showModal(`<div id="shpm"><b>Share “${esc(nm)}”</b>
+ <h4>1. Admin link</h4><p class="mu">Opens <b>only this project</b> with all its maps and features. The person must sign in with a staff account. Other projects are not reachable from this link.</p>
+ <textarea id="shA" rows="2" readonly>${esc(au)}</textarea><div class="row" style="margin-top:6px"><button id="shAc">Copy admin link</button></div>
+ <h4>2. View link</h4><p class="mu">${CLOUD?"Map view only, live Available / Sold. No names, agents, payments, files or editing.":"Needs the hosted cloud version to show live status."}</p>
+ <textarea id="shV" rows="2" readonly>${esc(vu)}</textarea><div class="row" style="margin-top:6px"><button id="shVc">Copy view link</button><button class="g" onclick="hideModal()">Close</button></div></div>`);
+ $("shAc").onclick=()=>copyT(au);$("shVc").onclick=()=>copyT(vu)};
+})();
 </script>
 </body></html>
