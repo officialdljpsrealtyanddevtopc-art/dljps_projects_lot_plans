@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Prayer Mountain Valley III – Lot Manager</title>
+<title>DLJPS Project Management Hub</title>
 <style>
 :root{--bg:#f3f5f2;--card:#fff;--tx:#1b1f1b;--mu:#667066;--bd:#d6dbd5;--ac:#2f6b3a;--in:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121512;--card:#1e231e;--tx:#e8ece8;--mu:#9aa59a;--bd:#363d36;--ac:#6fc27e;--in:#161a16}}
@@ -2193,7 +2193,7 @@ function drawBc(){
  const hOn=homeOpen();bc.style.display=hOn?"none":"";
  const proj=safe(()=>mname(cm),"Map");
  /* page heading and tab title follow the open map */
- {const h1=document.querySelector("header h1");if(h1&&proj&&proj!=="Map"&&h1.textContent!==proj){h1.textContent=proj;document.title=proj+" \u2013 Lot Manager"}}
+ {const h1=document.querySelector("header h1");if(h1&&proj&&proj!=="Map"&&h1.textContent!==proj){h1.textContent=proj}}
  let h='<button class="g bk" type="button" data-bc="back" aria-label="Back">‹ Back</button><a role="link" tabindex="0" data-bc="home">Home</a><span class="sep" aria-hidden="true">›</span>';
  if(lotK){
   const p=lotK.split("-").map(Number),b=p[0],l=p[1],bl=safe(()=>META[b],"")||("Block "+b);
@@ -2214,14 +2214,13 @@ bc.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const t
 document.addEventListener("click",e=>{const g=e.target.closest&&e.target.closest("#mapw [data-k],#side [data-k]");if(!g)return;const p=String(g.dataset.k).split("-").map(Number);if(p.length<2||!isFinite(p[0])||!isFinite(p[1]))return;lotK=g.dataset.k;setTimeout(drawBc,0)},true);
 /* bottom navigation */
 const nv=document.createElement("nav");nv.id="bnav";nv.setAttribute("aria-label","Main");
-nv.innerHTML='<button type="button" data-n="home"><span aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></span>Home</button><button type="button" data-n="map"><span aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M9 4L3 6.5v13L9 17l6 3 6-2.5v-13L15 7z"/><path d="M9 4v13M15 7v13"/></svg></span>Map</button><button type="button" data-n="clients"><span aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.3c1.8.8 3 2.5 3 4.7"/></svg></span>Clients</button><button type="button" data-n="reports"><span aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span>Reports</button>';
+nv.innerHTML='<button type="button" data-n="home"><span aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></span>Home</button><button type="button" data-n="map"><span aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M9 4L3 6.5v13L9 17l6 3 6-2.5v-13L15 7z"/><path d="M9 4v13M15 7v13"/></svg></span>Maps</button><button type="button" data-n="reports"><span aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span>Reports</button>';
 document.body.appendChild(nv);
 const closeAll=()=>{["lbp","tap","tapd"].forEach(id=>{const e=$(id);if(e)e.classList.remove("on")});const h=$("home");if(h)h.removeAttribute("inert");safe(()=>hideModal())};
 const toMap=()=>{closeAll();if(homeOpen())safe(()=>hideHome())};
 nv.addEventListener("click",e=>{const b=e.target.closest("[data-n]");if(!b)return;const n=b.dataset.n;
  if(n==="home"){closeAll();safe(()=>showHome())}
  else if(n==="map"){toMap();window.scrollTo({top:0,behavior:"smooth"})}
- else if(n==="clients"){toMap();window.scrollTo({top:0});const q=$("q");if(q){q.focus({preventScroll:false});q.scrollIntoView({block:"center",behavior:"smooth"})}}
  else if(n==="reports"){closeAll();safe(()=>mapsDash())}
  setTimeout(drawBc,60)});
 const ho=$("home");if(ho)new MutationObserver(drawBc).observe(ho,{attributes:true,attributeFilter:["style","class"]});
@@ -2304,7 +2303,7 @@ try{PS={};render()}catch(e){}})();
 const _lm=loadMap,_sh=showHome;
 loadMap=function(id){if(SCOPE&&id!==SCOPE)return Promise.resolve();return _lm(id)};
 showHome=function(){if(SCOPE)return;return _sh()};
-function lock(){const m=MAPS[SCOPE];if(!m)return;try{document.title=m.name+" – Lot Manager";const h=document.querySelector("header h1");if(h)h.textContent=m.name}catch(e){}}
+function lock(){const m=MAPS[SCOPE];if(!m)return;try{const h=document.querySelector("header h1");if(h)h.textContent=m.name}catch(e){}}
 if(SCOPE){
  if(typeof onIn==="function"){const _oi=onIn;onIn=async function(ses){await _oi(ses);try{await _lm(SCOPE);lock();const h=$("home");if(h)h.style.display="none"}catch(e){}}}
  if(!CLOUD){_lm(SCOPE).then(lock).catch(()=>{});const h=$("home");if(h)h.style.display="none"}
@@ -2428,7 +2427,8 @@ el("hsBack").onclick=close;
 /* ===== Homepage header name ===== */
 const DEFN="DLJPS Project Management Hub";
 window.hubName=()=>{let n="";try{n=(localStorage.getItem("pmv3_hname")||"").trim()}catch(e){}return n||DEFN};
-function applyName(){const n=window.hubName(),h=home.querySelector(".w>h2"),t=document.querySelector("#wpv .pt");if(h)h.textContent=n;if(t)t.textContent=n}
+document.title=window.hubName();
+function applyName(){const n=window.hubName(),h=home.querySelector(".w>h2"),t=document.querySelector("#wpv .pt");if(h)h.textContent=n;if(t)t.textContent=n;document.title=n}
 home.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#hsb")){let n="";try{n=(localStorage.getItem("pmv3_hname")||"").trim()}catch(x){}el("hnm").value=n;applyName()}});
 el("hnsave").onclick=()=>{const v=el("hnm").value.trim();try{if(v)localStorage.setItem("pmv3_hname",v);else localStorage.removeItem("pmv3_hname");el("hnmsg").textContent=v?"Saved ✓":"Cleared. Using the default name.";applyName()}catch(e){el("hnmsg").textContent="Could not save on this browser."}};
 el("hnreset").onclick=()=>{try{localStorage.removeItem("pmv3_hname")}catch(e){}el("hnm").value="";el("hnmsg").textContent="Reset to the default name.";applyName()};
