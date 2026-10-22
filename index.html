@@ -2341,4 +2341,82 @@ const _oi=onIn;onIn=async function(ses){await _oi(ses);load();sub()};
 const _oo=onOut;onOut=function(){try{if(rch)sb.removeChannel(rch)}catch(e){}rch=null;REQ=[];_oo();paint()};
 })();
 </script>
+<style>
+#hset{position:fixed;inset:0;z-index:30;background:var(--bg);color:var(--tx);overflow:auto;display:none;padding:clamp(16px,4vw,48px);padding-top:calc(clamp(16px,4vw,48px) + env(safe-area-inset-top,0px))}
+#hset .w{max-width:980px;margin:0 auto}
+#hset .tp{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+#hset h2{margin:0;font-size:clamp(1.4rem,4vw,2rem);letter-spacing:-.01em;color:var(--ac)}
+#hset .g2{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+@media(max-width:800px){#hset .g2{grid-template-columns:1fr}}
+#hset .pc{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
+#hset .pv{position:relative;aspect-ratio:16/9;border-radius:10px;border:1px dashed var(--bd);overflow:hidden;background:repeating-conic-gradient(color-mix(in srgb,var(--tx) 6%,transparent) 0 25%,transparent 0 50%) 0 0/20px 20px,var(--bg);touch-action:none}
+#hset .pv .pt{position:absolute;left:14px;top:12px;font-weight:700;color:var(--ac);font-size:clamp(14px,3vw,26px);opacity:.7;pointer-events:none}
+#hset .pv img{position:absolute;transform:translate(-50%,-50%);cursor:grab;user-select:none;-webkit-user-drag:none;max-width:none}
+#hset label{display:flex;justify-content:space-between;font-size:13px;margin:14px 0 4px}
+#hset input[type=range]{width:100%;padding:0}
+#hset .pg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:170px}
+#hset .pg button{aspect-ratio:1;padding:0;min-width:0}
+#hset .pg button.on{outline:2px solid var(--ac)}
+#hset .ra{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#hset .hint{font-size:12px;color:var(--mu);margin-top:8px}
+#wmk{position:fixed;transform:translate(-50%,-50%);pointer-events:none;z-index:29;max-width:none;user-select:none}
+</style>
+<div id="hset" role="dialog" aria-modal="true" aria-label="Watermark logo settings"><div class="w">
+<div class="tp"><button class="g" id="hsBack" type="button">← Back</button><h2>Settings · Watermark logo</h2></div>
+<div class="g2">
+<div class="pc"><div class="pv" id="wpv"><span class="pt">DLJPS Project Management Hub</span><img id="wpi" alt="" style="display:none"></div>
+<p class="hint">Preview of the dashboard home. Drag the logo to move it.</p></div>
+<div class="pc">
+<input type="file" id="wf" accept="image/*" hidden>
+<div class="ra" style="margin-top:0"><button type="button" id="wup">⬆ Upload logo</button><button type="button" class="g" id="wrm">Remove</button></div>
+<label><span>Show watermark</span><input type="checkbox" id="won" style="width:auto"></label>
+<label><span>Show on all pages (not just home)</span><input type="checkbox" id="wall" style="width:auto"></label>
+<label><span>Opacity</span><b id="wov">30%</b></label><input type="range" id="wo" min="5" max="100" step="1">
+<label><span>Size</span><b id="wsv">25%</b></label><input type="range" id="ws" min="5" max="90" step="1">
+<label><span>Position</span><b id="wpp"></b></label>
+<div class="pg" id="wg"></div>
+<label><span>Horizontal</span></label><input type="range" id="wx" min="0" max="100" step="1">
+<label><span>Vertical</span></label><input type="range" id="wy" min="0" max="100" step="1">
+<div class="ra"><button type="button" id="wsave">Save</button><button type="button" class="g" id="wreset">Reset position</button></div>
+<p class="hint" id="wmsg">Saved on this device/browser.</p>
+</div></div></div></div>
+<script>
+(()=>{
+const K="pmv3_wm",D={img:"",on:true,all:true,op:30,sz:25,x:50,y:50};
+let C=Object.assign({},D),el=id=>document.getElementById(id);
+try{const r=JSON.parse(localStorage.getItem(K)||"null");if(r)C=Object.assign({},D,r)}catch(e){}
+const home=el("home"),set=el("hset");
+function persist(){try{localStorage.setItem(K,JSON.stringify(C));el("wmsg").textContent="Saved ✓";return true}catch(e){el("wmsg").textContent="Could not save (storage full). Try a smaller logo.";return false}}
+function place(i,box){i.style.left=C.x+"%";i.style.top=C.y+"%";i.style.width=C.sz+"%";i.style.opacity=C.op/100}
+function mark(){let m=el("wmk");if(!C.img||!C.on){if(m)m.remove();return}
+ if(!m){m=document.createElement("img");m.id="wmk";m.alt="";m.setAttribute("aria-hidden","true")}
+ const tp=C.all?document.body:home;if(m.parentNode!==tp)tp.appendChild(m);if(m.getAttribute("src")!==C.img)m.src=C.img;
+ m.style.left=C.x+"%";m.style.top=C.y+"%";m.style.width=C.sz+"vw";m.style.opacity=C.op/100}
+function gear(){const row=home.querySelector(".hd .row");if(row&&!el("hsb")){const b=document.createElement("button");b.className="g nopub";b.id="hsb";b.type="button";b.title="Settings";b.setAttribute("aria-label","Settings");b.innerHTML='<svg class="ic" viewBox="0 0 24 24" style="margin:0"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';row.insertBefore(b,row.firstChild)}}
+function sync(){gear();mark()}
+new MutationObserver(sync).observe(home,{childList:true});sync();
+function ui(){const i=el("wpi");if(C.img){i.src=C.img;i.style.display="block"}else i.style.display="none";place(i);
+ el("won").checked=C.on;el("wall").checked=C.all;el("wo").value=C.op;el("ws").value=C.sz;el("wx").value=C.x;el("wy").value=C.y;
+ el("wov").textContent=C.op+"%";el("wsv").textContent=C.sz+"%";el("wpp").textContent=Math.round(C.x)+"% , "+Math.round(C.y)+"%";
+ [...el("wg").children].forEach(b=>b.classList.toggle("on",+b.dataset.x==C.x&&+b.dataset.y==C.y));mark()}
+const gp=el("wg");for(const y of[15,50,85])for(const x of[15,50,85]){const b=document.createElement("button");b.type="button";b.className="g";b.dataset.x=x;b.dataset.y=y;b.setAttribute("aria-label","Position "+x+","+y);b.onclick=()=>{C.x=x;C.y=y;ui()};gp.appendChild(b)}
+el("wo").oninput=e=>{C.op=+e.target.value;ui()};el("ws").oninput=e=>{C.sz=+e.target.value;ui()};
+el("wx").oninput=e=>{C.x=+e.target.value;ui()};el("wy").oninput=e=>{C.y=+e.target.value;ui()};
+el("won").onchange=e=>{C.on=e.target.checked;ui()};
+el("wall").onchange=e=>{C.all=e.target.checked;ui()};
+el("wup").onclick=()=>el("wf").click();
+el("wf").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const M=600,k=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);C.img=c.toDataURL("image/png");C.on=true;ui();persist()};im.onerror=()=>{el("wmsg").textContent="That file could not be read as an image."};im.src=r.result};r.readAsDataURL(f);e.target.value=""};
+el("wrm").onclick=()=>{C.img="";ui();persist()};
+el("wreset").onclick=()=>{C.x=50;C.y=50;C.sz=25;C.op=30;ui()};
+el("wsave").onclick=()=>{persist()};
+let dr=false;const pv=el("wpv"),pi=el("wpi");
+pi.onpointerdown=e=>{dr=true;pi.setPointerCapture(e.pointerId);e.preventDefault()};
+pi.onpointermove=e=>{if(!dr)return;const r=pv.getBoundingClientRect();C.x=Math.max(0,Math.min(100,Math.round((e.clientX-r.left)/r.width*100)));C.y=Math.max(0,Math.min(100,Math.round((e.clientY-r.top)/r.height*100)));ui()};
+pi.onpointerup=()=>{dr=false};
+home.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#hsb")){set.style.display="block";ui();el("hsBack").focus()}});
+function close(){persist();set.style.display="none";const b=el("hsb");if(b)b.focus()}
+el("hsBack").onclick=close;
+addEventListener("keydown",e=>{if(e.key==="Escape"&&set.style.display==="block"){e.stopPropagation();close()}},true);
+})();
+</script>
 </body></html>
